@@ -12,13 +12,32 @@ def FermatPrimalityTest(p):
     # to be completed
     return a
 
+# gets a random odd number of the given number of digits in integer and array forms
+def getRandOddInt(size):
+    p = np.random.randint(10, size = 154)
+
+    if(p[0] == 0 or (p[p.size - 1] % 2) == 0):
+        return getRandOddInt(size)
+
+    counter = 0
+    bigIntP = int(0)
+    for i in p:
+        bigIntP += int(int(i) * int(10 ** (153 - counter)))
+        counter += 1
+
+    return p, bigIntP
 
 def RSA_key_generation():
+    numDigits = 154
     p = 7
     q = 13
     n = p*q
     e = 3
     d = 5
+
+    pArray, p = getRandOddInt(numDigits)
+    qArray, q = getRandOddInt(numDigits)
+
     # to be completed
     pq = pd.Series([p,q])
     en = pd.Series([e,n])
