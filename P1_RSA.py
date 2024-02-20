@@ -7,25 +7,47 @@ import sys
 
 # check if p is prime (most likely a prime)
 def FermatPrimalityTest(p):
-    print(p)
-    a = False
-    # to be completed
-    return a
+    #print(p,"\n")
+    fermatTest = True
+
+    a = 7
+    if pow(a, p - 1, p) != 1:
+        fermatTest = False
+    #print("After 7 test is: ", fermatTest)
+
+    a = 13
+    if pow(a, p - 1, p) != 1:
+        fermatTest = False
+    #print("After 13 test is: ", fermatTest)
+
+    return fermatTest
+
+# gets a likely prime number with decimal digits equal to size
+def getPrime(size):
+    numArray, num = getRandOddInt(size)
+    counter = 0
+    while not FermatPrimalityTest(num):
+        numArray, num = getRandOddInt(size)
+        counter += 1
+
+    print("Took ", counter, " tries to find the prime number: \n", num)
+    return numArray, num
+
 
 # gets a random odd number of the given number of digits in integer and array forms
 def getRandOddInt(size):
-    p = np.random.randint(10, size = 154)
+    pArray = np.random.randint(10, size = 154)
 
-    if(p[0] == 0 or (p[p.size - 1] % 2) == 0):
+    if(pArray[0] == 0 or (pArray[pArray.size - 1] % 2) == 0):
         return getRandOddInt(size)
 
     counter = 0
     bigIntP = int(0)
-    for i in p:
+    for i in pArray:
         bigIntP += int(int(i) * int(10 ** (153 - counter)))
         counter += 1
 
-    return p, bigIntP
+    return pArray, bigIntP
 
 def RSA_key_generation():
     numDigits = 154
@@ -35,8 +57,12 @@ def RSA_key_generation():
     e = 3
     d = 5
 
-    pArray, p = getRandOddInt(numDigits)
-    qArray, q = getRandOddInt(numDigits)
+    pArray, p = getPrime(numDigits)
+    qArray, q = getPrime(numDigits)
+
+    # ensures the same prime numbers have not been chosen
+    while q == p:
+        qArray, q = getPrime(numDigits)
 
     # to be completed
     pq = pd.Series([p,q])
