@@ -7,14 +7,14 @@ import sys
 
 # check if p is prime (most likely a prime)
 def FermatPrimalityTest(p):
-    #print(p,"\n")
     fermatTest = True
+    sizeOfA = 9
 
-    a = 7
+    a = getRandOddInt(sizeOfA)
     if pow(a, p - 1, p) != 1:
         fermatTest = False
 
-    a = 13
+    a = getRandOddInt(sizeOfA)
     if pow(a, p - 1, p) != 1:
         fermatTest = False
 
@@ -24,13 +24,13 @@ def FermatPrimalityTest(p):
 def getPrime(size):
     num = getRandOddInt(size)
     counter = 0
+
     while not FermatPrimalityTest(num):
         num = getRandOddInt(size)
         counter += 1
 
-    print("Took ", counter, " tries to find the prime number: \n", num)
+    print("Took", counter, "tries to find the prime number: \n", num)
     return num
-
 
 # gets a random odd number of the given number of digits in integer and array forms
 def getRandOddInt(size):
@@ -72,6 +72,7 @@ def extendedEuclid(a, b):
 
     return g, s, t
 
+# generates an RSA public and private key
 def RSA_key_generation():
     numDigits = 154
     p = 7
@@ -80,6 +81,7 @@ def RSA_key_generation():
     e = 3
     d = 5
 
+    # find 2 prime numbers
     p = getPrime(numDigits)
     q = getPrime(numDigits)
 
@@ -87,6 +89,7 @@ def RSA_key_generation():
     while q == p:
         q = getPrime(numDigits)
 
+    # compute n from the 2 primes, phi of n, e, and d
     n = int(p * q)
     phiN = int((p - 1) * (q - 1))
     e = getE(phiN, numDigits)
@@ -99,7 +102,6 @@ def RSA_key_generation():
     en.to_csv("e_n.csv")
     dn.to_csv("d_n.csv")
     print("done with key generation!")
-
 
 def Signing(doc, key):
     match = False
