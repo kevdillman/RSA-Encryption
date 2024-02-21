@@ -104,6 +104,8 @@ def RSA_key_generation():
     dn.to_csv("d_n.csv")
     print("done with key generation!")
 
+# given a file with a message and a RSA private key
+# produces a signed file using a SHA256 hash
 def Signing(doc, key):
     #match = False
     rawMsg = open(doc, 'r').read()
@@ -128,14 +130,42 @@ def Signing(doc, key):
     signedDoc.close()
 
 def verification(doc, key):
-
     match = False
-    # to be completed
+    message, signature = getMessageAndSignature(doc)
+
+
     if match:
         print("\nAuthentic!")
     else:
         print("\nModified!")
 
+# given a file name of a signed document
+# returns the original message and signature within the file
+def getMessageAndSignature(doc):
+    signedMsg = open(doc, 'r').readlines()
+    linesInFile = len(signedMsg)
+
+    signature = signedMsg[linesInFile - 1]
+
+    # first line of message
+    message = trimNewline(signedMsg[0])
+
+    # if message is more than 1 line
+    # append each line to the message
+    currentLine = 1
+    while currentLine < linesInFile - 1:
+        message += '\n' + trimNewline(signedMsg[currentLine])
+        currentLine += 1
+
+    return message, signature
+
+# given a string removes the last character if it is a new line
+def trimNewline(msg):
+    msgLen = len(msg)
+    if (msg[msgLen - 1]) == '\n':
+        #print("found newline")
+        return msg[:msgLen - 1]
+    return msg
 
 # No need to change the main function.
 def main():
@@ -146,16 +176,16 @@ def main():
     #                                       or   python yourProgram.py 2 v file.txt.signed
     else:
         (task, fileName) = sys.argv[2:]
-        if "s" in task:  # do signing
+        if "s" in task:
             doc = fileName
-
             key = pd.read_csv("d_n.csv")
+
             Signing(doc, key)
 
         else:
             # do verification
-            doc = None   # you figure out
-            key = None   # you figure out
+            doc = fileName
+            key = pd.read_csv("e_n.csv")
             verification(doc, key)
 
     print("done!")
