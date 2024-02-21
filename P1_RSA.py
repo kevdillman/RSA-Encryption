@@ -3,6 +3,7 @@
 import pandas as pd
 import numpy as np
 import sys
+import hashlib
 
 
 # check if p is prime (most likely a prime)
@@ -104,10 +105,27 @@ def RSA_key_generation():
     print("done with key generation!")
 
 def Signing(doc, key):
-    match = False
-    # to be completed
-    print("\nSigned ...")
+    #match = False
+    rawMsg = open(doc, 'r').read()
 
+    # create the hash as a decimal to use in pow function
+    h = int('0x' + hashlib.sha256(rawMsg.encode('utf-8')).hexdigest(), 0)
+
+    # get the components of the key from the csv
+    d = int(key.at[0, '0'])
+    n = int(key.at[1, '0'])
+
+    signed = pow(h, d, n)
+
+    # write the original message to a file, then append the signaute on the last line
+    signedDoc = open(doc + ".signed", 'w')
+    signedDoc.write(rawMsg + '\n' + str(signed))
+    signedName = signedDoc.name
+    signedDoc.close()
+    signedDoc = open(signedName, 'r')
+
+    print("\nSigned\n", signedDoc.read())
+    signedDoc.close()
 
 def verification(doc, key):
 
@@ -129,9 +147,11 @@ def main():
     else:
         (task, fileName) = sys.argv[2:]
         if "s" in task:  # do signing
-            doc = None  # you figure out
-            key = None  # you figure out
+            doc = fileName
+
+            key = pd.read_csv("d_n.csv")
             Signing(doc, key)
+
         else:
             # do verification
             doc = None   # you figure out
