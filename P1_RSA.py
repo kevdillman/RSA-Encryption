@@ -13,25 +13,23 @@ def FermatPrimalityTest(p):
     a = 7
     if pow(a, p - 1, p) != 1:
         fermatTest = False
-    #print("After 7 test is: ", fermatTest)
 
     a = 13
     if pow(a, p - 1, p) != 1:
         fermatTest = False
-    #print("After 13 test is: ", fermatTest)
 
     return fermatTest
 
 # gets a likely prime number with decimal digits equal to size
 def getPrime(size):
-    numArray, num = getRandOddInt(size)
+    num = getRandOddInt(size)
     counter = 0
     while not FermatPrimalityTest(num):
-        numArray, num = getRandOddInt(size)
+        num = getRandOddInt(size)
         counter += 1
 
     print("Took ", counter, " tries to find the prime number: \n", num)
-    return numArray, num
+    return num
 
 
 # gets a random odd number of the given number of digits in integer and array forms
@@ -47,7 +45,21 @@ def getRandOddInt(size):
         bigIntP += int(int(i) * int(10 ** (153 - counter)))
         counter += 1
 
-    return pArray, bigIntP
+    return bigIntP
+
+# uses Euclid's method to find greatest common divisor
+def getGCD(x, y):
+    if y == 0:
+        return x
+    return(getGCD(y, int(x % y)))
+
+def getE(phiN, size):
+    e = getRandOddInt(size)
+
+    while getGCD(phiN, e) > 1:
+        e = getRandOddInt(size)
+
+    return e
 
 def RSA_key_generation():
     numDigits = 154
@@ -57,14 +69,17 @@ def RSA_key_generation():
     e = 3
     d = 5
 
-    pArray, p = getPrime(numDigits)
-    qArray, q = getPrime(numDigits)
+    p = getPrime(numDigits)
+    q = getPrime(numDigits)
 
     # ensures the same prime numbers have not been chosen
     while q == p:
-        qArray, q = getPrime(numDigits)
+        q = getPrime(numDigits)
 
-    # to be completed
+
+    n = int(p * q)
+    e = getE(int((p - 1) * (q - 1)), numDigits)
+
     pq = pd.Series([p,q])
     en = pd.Series([e,n])
     dn = pd.Series([d,n])
