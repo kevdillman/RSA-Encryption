@@ -53,6 +53,7 @@ def getGCD(x, y):
         return x
     return(getGCD(y, int(x % y)))
 
+# given phi of n and a number of digits finds an e to use in rsa
 def getE(phiN, size):
     e = getRandOddInt(size)
 
@@ -60,6 +61,16 @@ def getE(phiN, size):
         e = getRandOddInt(size)
 
     return e
+
+# returns the gcd, and multiplicative inverse of a and b
+def extendedEuclid(a, b):
+    if b == 0:
+        return a, 1, 0
+
+    u, v, w = extendedEuclid(b, a % b)
+    g, s, t = u, w, (v - int(a / b) * w)
+
+    return g, s, t
 
 def RSA_key_generation():
     numDigits = 154
@@ -76,9 +87,10 @@ def RSA_key_generation():
     while q == p:
         q = getPrime(numDigits)
 
-
     n = int(p * q)
-    e = getE(int((p - 1) * (q - 1)), numDigits)
+    phiN = int((p - 1) * (q - 1))
+    e = getE(phiN, numDigits)
+    gcd, _, d = extendedEuclid(phiN, e)
 
     pq = pd.Series([p,q])
     en = pd.Series([e,n])
