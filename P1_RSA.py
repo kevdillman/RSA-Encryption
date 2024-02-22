@@ -34,16 +34,16 @@ def getPrime(size):
     return num
 
 # gets a random odd number of the given number of digits in integer and array forms
-def getRandOddInt(size):
-    pArray = np.random.randint(10, size = 154)
+def getRandOddInt(numDigits):
+    pArray = np.random.randint(10, size = numDigits)
 
     if(pArray[0] == 0 or (pArray[pArray.size - 1] % 2) == 0):
-        return getRandOddInt(size)
+        return getRandOddInt(numDigits)
 
-    counter = 0
+    counter = 1
     bigIntP = int(0)
     for i in pArray:
-        bigIntP += int(int(i) * int(10 ** (153 - counter)))
+        bigIntP += int(int(i) * int(10 ** (numDigits - counter)))
         counter += 1
 
     return bigIntP
@@ -65,13 +65,30 @@ def getE(phiN, size):
 
 # returns the gcd, and multiplicative inverse of a and b
 def extendedEuclid(a, b):
-    if b == 0:
-        return a, 1, 0
+    if int(b) == 0:
+        return int(a), 1, 0
 
-    u, v, w = extendedEuclid(b, a % b)
-    g, s, t = u, w, (v - int(a / b) * w)
+    passB = int(a % b)
+    a = b
 
-    return g, s, t
+    u, v, w = extendedEuclid(a, passB)
+    aDivb = int(int(a) // int(b))
+    g, s, t = int(u), int(w), int((int(v) - int(aDivb) * int(w)))
+
+    return int(g), int(s), int(t)
+
+def secondExtendedEuclid(a, b):
+    if a == 0:
+        return b, 0, 1
+    gcd, s, d = secondExtendedEuclid(b % a, a)
+    #print("gcd, s, d =", gcd, s, d)
+    return gcd, d - (b // a) * s, s
+
+def modInverse(b, a):
+    gcd, s, d = secondExtendedEuclid(a, b)
+    #print("inverse s:", s)
+    #print("inverse d:", d)
+    return (d % a)
 
 # generates an RSA public and private key
 def RSA_key_generation():
@@ -92,10 +109,52 @@ def RSA_key_generation():
 
     # compute n from the 2 primes, phi of n, e, and d
     n = int(p * q)
-    phiN = int((p - 1) * (q - 1))
-    e = getE(phiN, numDigits)
-    gcd, _, d = extendedEuclid(phiN, e)
+    print("n =", n)
+    phiN = int(int(p - 1) * int(q - 1))
+    print("phiN =", phiN)
+    e = int(getE(phiN, numDigits))
+    print("e:", e)
+    #gcd, s, d = extendedEuclid(e, phiN)
+    #print("g:", gcd)
+    #print("s:", s)
+    #print("t(d):", d)
 
+    #de = int(d * e)
+    #se = int(s * e)
+    #deModPhiN = int(de) % int(phiN)
+    #print("d * e =", de)
+    #print("de mod phiN =", deModPhiN)
+
+    inverse = modInverse(e , phiN)
+    #print("Inverse of ", e, " is ", inverse)
+    de = int(inverse * e)
+    #se = int(s * e)
+    deModPhiN = int(de) % phiN
+    print("d * e =", de)
+    print("de mod phiN =", deModPhiN)
+
+    '''
+    counter = 0
+    while deModPhiN != 1 and counter < 100:
+
+        # compute n from the 2 primes, phi of n, e, and d
+        e = int(getE(phiN, numDigits))
+        print("e:", e)
+        gcd, s, d = extendedEuclid(phiN, e)
+        print("g:", gcd)
+        print("s:", s)
+        print("t(d):", d)
+
+        de = int(d * e)
+        se = int(s * e)
+        deModPhiN = int(de) % int(phiN)
+        print("d * e =", de)
+        print("de mod phiN =", deModPhiN)
+        counter += 1
+    print("counter =", counter)
+    #print("s * e =", se)
+    #print("se mod phiN =", int(se) % int(phiN))
+    '''
     pq = pd.Series([p,q])
     en = pd.Series([e,n])
     dn = pd.Series([d,n])
@@ -132,6 +191,56 @@ def Signing(doc, key):
 def verification(doc, key):
     match = False
     message, signature = getMessageAndSignature(doc)
+
+    # get the components of the key from the csv
+    e = int(key.at[0, '0'])
+    n = int(key.at[1, '0'])
+    #print("The signature is: \n", int(signature))
+    decodedSignature = pow(int(signature), int(e), int(n))
+    messageHash = int('0x' + hashlib.sha256(message.encode('utf-8')).hexdigest(), 0)
+    print("Decoded signature is: \n", decodedSignature)
+    print("Message hash: \n", messageHash)
+    print("The two match: ", decodedSignature == messageHash)
+
+    #k = int(e * d)
+
+    #print("e is:", e)
+    #e = getE(phiN, int(2))
+
+
+    p = int(8740585859854599967603419425149349020006339268012462485259213327299822497913990045529145254447284793948432056732938816865979613734125034173452915340311883)
+    q = int(1008662020699151390175514732832665985272962248350721925088724316356384168965441891818706610549327279724266755786480887531405872862766004648293799023889587)
+    n = int(p * q)
+    phiN = int((p - 1) * (q - 1))
+    gcd, s, d = extendedEuclid(phiN, e)
+    dTimesE = int(d * e)
+
+
+    dKey = pd.read_csv("d_n.csv")
+    dRead = int(dKey.at[0, '0'])
+
+
+
+    print("getE(phiN, numDigits) == e", e == getE(phiN, 154))
+    #print("g is:", gcd)
+    #print("s is:", s)
+    #print("t is:", d)
+    print("d == dRead", d == dRead )
+    #print("p is:\n", p)
+    #print("q is:\n", q)
+    #print("phiN is:\n", phiN)
+    #print("e is:\n", e)
+    #print("gcd phiN and e:\n", gcd)
+    #print("d is:\n", d)
+    #print("n is:\n", n)
+    #print("gcd phiN and e: ", getGCD(phiN, e))
+
+    #print("dTimesE =\n", dTimesE)
+    #print("phi of n:\n", phiN)
+    #print("(d * e) % phiN =", int(dTimesE % phiN))
+    #print("k is:\n", k)
+
+    #print("is phiN greater than d * e", phiN > dTimesE)
 
 
     if match:
